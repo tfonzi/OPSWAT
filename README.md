@@ -1,10 +1,12 @@
 # OPSWAT Coding Challenge
 
 Author: Tyler Fonzi
+
 Built using: Node.js
+
 Tested on: Windows Visual Studio Code
 
-#Build Instructions
+# Build Instructions
 
 1. Download files from GitHub Repo.
 
