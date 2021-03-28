@@ -2,7 +2,7 @@
 
 Author: Tyler Fonzi
 
-Built using: Node.js
+Built and coded using: Node.js and JavaScript
 
 Tested on: Windows Visual Studio Code
 
@@ -10,8 +10,10 @@ Tested on: Windows Visual Studio Code
 
 1. Download files from GitHub Repo.
 
-2. In directory, run the command "npm install" to install the packages specified by the package.json.
+2. Download and install Node.js and npm if not already installed.
 
-3. Add your own ".env" file using the example format, specifying the API Key
+2. In directory, run the command "npm install" to install the packages specified by the package.json file.
+
+3. Add ".env" file using the example format, specifying the API Key
 
 4. Run the program with the command "node app.js".
