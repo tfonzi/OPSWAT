@@ -1,1 +1,1 @@
-fdasfdsfadsf
+This is a sample text file for the OPSWAT coding challenge. This file has not been processed so it should trigger file upload.
