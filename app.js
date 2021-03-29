@@ -26,7 +26,6 @@ const find_hashes = async (filePath) => {
 }
 
 const retrieve_scan_report_via_hashes = async (hashes, apiKey) => {
-
   const url = 'https://api.metadefender.com/v4/hash/';
  
   const options = {
@@ -39,19 +38,16 @@ const retrieve_scan_report_via_hashes = async (hashes, apiKey) => {
   //Cycle through hashes and go with first one that works
   var success = false;
   var request;
-  var hash = ""
 
   request = await fetch(`${url}${hashes.md5}`, options); //Try md5
   if(request.status === 200){
     success = true;
-    hash = "md5"
   }
 
   if(success == false){ //Try sha1
     request = await fetch(`${url}${hashes.sha1}`, options); 
     if(request.status === 200){
       success = true;
-      hash = "sha1"
     }
   }
 
@@ -59,7 +55,6 @@ const retrieve_scan_report_via_hashes = async (hashes, apiKey) => {
     request = await fetch(`${url}${hashes.sha256}`, options); 
     if(request.status === 200){
       success = true;
-      hash = "sha256"
     }
   }
 
@@ -152,6 +147,8 @@ const format_output = (scan_report) => {
 }
 
 
+
+console.log("Enter the filename (absolute or relative) of the file you'd like to process.")
 const filePath = prompt('upload_file ');
 
 find_hashes(filePath).then(hashes => {
@@ -163,7 +160,7 @@ find_hashes(filePath).then(hashes => {
         upload_file(filePath, process.env.APIKEY).then(response => { //If no hashes found, upload file
   
           retrieve_scan_report_via_data_id(response.data_id, process.env.APIKEY).then(report => { //Get scan report via data_id
-            //console.log("Scan Report: ", JSON.stringify(report, undefined, 4)) //Printing pretty JSON string of scan report
+            console.log("Printing Scan Results:")
             format_output(report);
           }).catch(error => {
             console.log(error.message)
@@ -174,12 +171,12 @@ find_hashes(filePath).then(hashes => {
         });
   
       }
-      else{ //If its a different error, show scan report.
+      else{ //If its a different error, show error report.
         console.log("Error Report: ", JSON.stringify(report, undefined, 4))
       }
     }
     else{ //If there is no error, then scan report retrival via hash lookup was successful.
-      //console.log("Scan Report: ", JSON.stringify(report, undefined, 4)) 
+      console.log("Hash Lookup successful. Printing Scan Results:") 
       format_output(report);
     }
   }).catch(error => {
