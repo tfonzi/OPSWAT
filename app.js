@@ -3,10 +3,9 @@ const fetch = require('node-fetch');
 const FormData = require('form-data');
 const fs = require('fs');
 const hasha = require('hasha');
-require('dotenv').config()
+require('dotenv').config();
 
 const sleep = (milliseconds) => {
-
   const start_date = Date.now();
   while((Date.now() - start_date) < milliseconds);
 }
@@ -59,17 +58,30 @@ const retrieve_scan_report_via_hashes = async (hashes, apiKey) => {
   }
 
   const data = await request.json();
-  return data;
+
+  //Error handling
+  if(data.error){
+    if(data.error.code === 404003){ //If code is 404003, do file upload.
+      return data;
+    }
+    else{
+      const message = data.error.messages[0];
+      throw Error("Error: " + message);
+    }
+  }
+  else{
+    return data;
+  }
 }
 
 
 const upload_file = async (filePath, apiKey) => {
 
-  const file = fs.createReadStream(filePath)
-  console.log("Starting file upload. Please wait. May take a few minutes for larger files.")
+  const file = fs.createReadStream(filePath);
+  console.log("Starting file upload. Please wait. May take a few minutes for larger files.");
   var form = new FormData();
-  form.setBoundary("----WebKitFormBoundary7MA4YWxkTrZu0gW")
-  form.append('file', file)
+  form.setBoundary("----WebKitFormBoundary7MA4YWxkTrZu0gW");
+  form.append('file', file);
 
   const url = 'https://api.metadefender.com/v4/file';
   
@@ -84,8 +96,15 @@ const upload_file = async (filePath, apiKey) => {
   const request = await fetch(url, options);
   console.log("File Upload Complete.");
   const data = await request.json();
-  return data;
-
+  
+  //Error handling
+  if(data.error){
+    const message = data.error.messages[0];
+    throw Error("Error: " + message);
+  }
+  else{
+    return data;
+  }
 }
 
 const retrieve_scan_report_via_data_id = async (data_id, apiKey) => {
@@ -99,36 +118,42 @@ const retrieve_scan_report_via_data_id = async (data_id, apiKey) => {
     }
   };
 
-  var progress = 0;
   var request;
   var data;
 
   while(true){ //Loop until scan is complete, check progress every 10 seconds
     request = await fetch(url, options);
     data = await request.json();
-    progress = data.scan_results.progress_percentage;
-    console.log("\nScan Progress Percentage:", progress, "%")
-    if(progress === 100){
+    console.log("\nScan Progress Percentage:", data.scan_results.progress_percentage, "%")
+    if(data.scan_results.progress_percentage === 100){
       break;
     }
     else{ //Wait 10 seconds
       var count = 0;
       while (count < 10){ //Show user something is happening
-        sleep(1000)
+        sleep(1000);
         process.stdout.write(".  ");
         count++;
       }
     }
     
   }
-  console.log("Scan Complete.")
-  return data;
+  console.log("Scan Complete.");
+
+  //Error handling
+  if(data.error){
+    const message = data.error.messages[0];
+    throw Error("Error: " + message);
+  }
+  else{
+    return data;
+  }
 }
 
 const format_output = (scan_report) => {
 
   //Append filename and overall status to beginning
-  var output_string = "\nfilename: " + scan_report.file_info.display_name + "\noverall_status: " + scan_report.scan_results.scan_all_result_a
+  var output_string = "\nfilename: " + scan_report.file_info.display_name + "\noverall_status: " + scan_report.scan_results.scan_all_result_a;
 
   const scanDetails = scan_report.scan_results.scan_details;
   Object.keys(scanDetails).map(key => { //Adding results from each engine onto the output string
@@ -141,47 +166,42 @@ const format_output = (scan_report) => {
   });
 
   //Append "END" statement
-  output_string = output_string + "\nEND"
+  output_string = output_string + "\nEND";
 
-  console.log(output_string)
+  console.log(output_string);
 }
 
 
 
-console.log("Enter the filename (absolute or relative) of the file you'd like to process.")
+console.log("Enter the filename (absolute or relative) of the file you'd like to process.");
 const filePath = prompt('upload_file ');
 
 find_hashes(filePath).then(hashes => {
   retrieve_scan_report_via_hashes(hashes, process.env.APIKEY).then(report => { //Checking hashes
-    if(report.error){ //If an error exists
-      if(report.error.code === 404003){ //If specifically this code "Hash not found", must perform file upload
-        console.log("Hash was not found.")
+    if(report.error){ //If an error exists. Should be 404003 since other error codes are handled by the throw-catch
+      console.log("Hash was not found.");
 
-        upload_file(filePath, process.env.APIKEY).then(response => { //If no hashes found, upload file
-  
-          retrieve_scan_report_via_data_id(response.data_id, process.env.APIKEY).then(report => { //Get scan report via data_id
-            console.log("Printing Scan Results:")
-            format_output(report);
-          }).catch(error => {
-            console.log(error.message)
-          });
-  
+      upload_file(filePath, process.env.APIKEY).then(response => { //If no hashes found, upload file
+
+        retrieve_scan_report_via_data_id(response.data_id, process.env.APIKEY).then(report => { //Get scan report via data_id
+          console.log("Printing Scan Results:");
+          format_output(report);
         }).catch(error => {
-          console.log(error.message)
+          console.log(error.message);
         });
-  
-      }
-      else{ //If its a different error, show error report.
-        console.log("Error Report: ", JSON.stringify(report, undefined, 4))
-      }
+
+      }).catch(error => {
+        console.log(error.message);
+      });
     }
     else{ //If there is no error, then scan report retrival via hash lookup was successful.
-      console.log("Hash Lookup successful. Printing Scan Results:") 
+      console.log("Hash Lookup successful.");
+      console.log("Printing Scan Results:");
       format_output(report);
     }
   }).catch(error => {
-    console.log(error.message)
+    console.log(error.message);
   });
 }).catch(error => {
-  console.log(error.message)
+  console.log(error.message);
 });
