@@ -1,0 +1,1 @@
+This is a sample text file for the OPSWAT coding challenge. This file has been processed so it should trigger successful hash lookup.
