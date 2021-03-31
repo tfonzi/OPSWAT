@@ -1,3 +1,11 @@
+# OPSWAT Coding Challenge
+
+Author: Tyler Fonzi
+
+Built and coded using: Node.js and JavaScript
+
+Tested on: Windows 10
+
 # Build Instructions
 
 1. Clone the repo from Github: `git clone tfonzi/OPSWAT`
@@ -9,3 +17,8 @@
 3. Override the included `.env` file by specifying the API Key
 
 4. Run the program with the command "node app.js".
+
+# Test Instructions
+
+1. In main directory, run `npm test` to run integration tests via Mocha.
+
