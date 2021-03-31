@@ -7,12 +7,22 @@ chai.use(chaiAsPromised);
 
 require('dotenv').config();
 
-const find_hashes = require("../controllers.js").find_hashes
-const upload_file = require("../controllers.js").upload_file
-const retrieve_scan_report_via_hashes = require("../controllers.js").retrieve_scan_report_via_hashes
-const retrieve_scan_report_via_data_id = require("../controllers.js").retrieve_scan_report_via_data_id
+const find_hashes = require("../utils.js").find_hashes
+const upload_file = require("../utils.js").upload_file
+const retrieve_scan_report_via_hashes = require("../utils.js").retrieve_scan_report_via_hashes
+const retrieve_scan_report_via_data_id = require("../utils.js").retrieve_scan_report_via_data_id
 
-const unit_tests = () => {
+const integration_tests = () => {
+
+    it('Return data if error code is 404003', () => {
+        const get_hash_request_stub = something.stub(user, "get_hash_request").returns({
+            error: {
+                code: 404003
+            }
+        });
+        var result = retrieve_scan_report_via_hashes(hashes, process.env.APIKEY);
+        return expect(result).to.eventually.be.rejected;
+    });
 
     it('Hash Return Failed due to Incorrect File Path', () => {
         
